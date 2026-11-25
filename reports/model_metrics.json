@@ -1,0 +1,130 @@
+{
+  "target": "Outcome",
+  "target_definition": "recorded status in this dataset; not a future clinical outcome",
+  "feature_columns": [
+    "Age",
+    "BMI",
+    "Gender",
+    "Nationality",
+    "Emirate",
+    "Cancer_Type",
+    "Cancer_Stage",
+    "Smoking_Status",
+    "Comorbidities",
+    "Ethnicity"
+  ],
+  "excluded_columns": [
+    "Patient_ID",
+    "Diagnosis_Date",
+    "Treatment_Type",
+    "Treatment_Start_Date",
+    "Death_Date",
+    "Cause_of_Death",
+    "Primary_Physician",
+    "Hospital",
+    "Weight",
+    "Height"
+  ],
+  "rows": 200000,
+  "train_rows": 160000,
+  "test_rows": 40000,
+  "comparison": {
+    "Logistic regression": {
+      "macro_f1": 0.36704059003958744,
+      "accuracy": 0.58715
+    },
+    "Decision tree": {
+      "macro_f1": 0.417630085573502,
+      "accuracy": 0.550575
+    }
+  },
+  "tuning": {
+    "best_params": {
+      "model__class_weight": "balanced",
+      "model__C": 3.0
+    },
+    "best_cv_macro_f1": 0.44708604957017944,
+    "trials": 6,
+    "folds": 3
+  },
+  "final_model": "Logistic regression",
+  "test_metrics": {
+    "accuracy": 0.532225,
+    "macro_f1": 0.45239177288530463,
+    "macro_precision": 0.46161933496852076,
+    "macro_recall": 0.49315105644823065,
+    "classification_report": {
+      "Deceased": {
+        "precision": 0.27909176915799433,
+        "recall": 0.5653310104529616,
+        "f1-score": 0.37369724189554904,
+        "support": 5740.0
+      },
+      "Recovered": {
+        "precision": 0.7091963545981773,
+        "recall": 0.6975417628683961,
+        "f1-score": 0.7033207805546046,
+        "support": 22089.0
+      },
+      "Under Treatment": {
+        "precision": 0.3965698811493907,
+        "recall": 0.21658039602333415,
+        "f1-score": 0.28015729620576046,
+        "support": 12171.0
+      },
+      "accuracy": 0.532225,
+      "macro avg": {
+        "precision": 0.46161933496852076,
+        "recall": 0.49315105644823065,
+        "f1-score": 0.45239177288530463,
+        "support": 40000.0
+      },
+      "weighted avg": {
+        "precision": 0.5523519263788815,
+        "recall": 0.532225,
+        "f1-score": 0.5272617335567855,
+        "support": 40000.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        3245,
+        1455,
+        1040
+      ],
+      [
+        3710,
+        15408,
+        2971
+      ],
+      [
+        4672,
+        4863,
+        2636
+      ]
+    ],
+    "class_order": [
+      "Deceased",
+      "Recovered",
+      "Under Treatment"
+    ]
+  },
+  "quality_checks": {
+    "before": {
+      "rows": 200000,
+      "columns": 20,
+      "exact_duplicates": 0,
+      "duplicate_patient_ids": 0,
+      "missing_cells": 423260
+    },
+    "after": {
+      "rows": 200000,
+      "columns": 21,
+      "exact_duplicates": 0,
+      "duplicate_patient_ids": 0,
+      "missing_cells": 342600,
+      "invalid_range_rows_removed": 0,
+      "comorbidity_unknown_count": 80660
+    }
+  }
+}
