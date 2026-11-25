@@ -72,8 +72,10 @@ The repository also contains a static project overview in `index.html` for
 GitHub Pages. GitHub Pages can serve that overview, but it cannot execute
 `app.py` or host the interactive Streamlit dashboard. To publish the static
 page, configure **Settings → Pages → Deploy from a branch → `main` → `/(root)`**.
-The interactive dashboard still requires a Python-capable host and its data and
-model artifacts.
+The overview includes a browser-side prediction form based on the fitted model;
+its full-dataset filters still require the Streamlit app and local data/model
+artifacts. The web form’s scores remain exploratory dataset-label probabilities,
+not clinical risks.
 
 ## Results
 

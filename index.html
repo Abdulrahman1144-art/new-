@@ -48,8 +48,10 @@
     .subtitle { margin: 9px 0 14px; color: #526d6a; }
     .warning { margin: 0 0 22px; padding: 13px 16px; border: 1px solid rgba(190, 127, 61, .24); border-radius: 14px; color: #755424; background: rgba(255, 248, 230, .92); }
     .tabs { display: flex; gap: 8px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
-    .tabs a { display: inline-block; margin-bottom: -1px; padding: 10px 14px; border: 1px solid transparent; border-radius: 10px 10px 0 0; color: #526d6a; font-weight: 650; text-decoration: none; }
-    .tabs a.active { border-color: var(--line); border-bottom-color: #f6faf9; color: var(--teal); background: rgba(255,255,255,.55); }
+    .tabs button { display: inline-block; margin-bottom: -1px; padding: 10px 14px; border: 1px solid transparent; border-radius: 10px 10px 0 0; color: #526d6a; background: transparent; font: inherit; font-weight: 650; cursor: pointer; }
+    .tabs button.active { border-color: var(--line); border-bottom-color: #f6faf9; color: var(--teal); background: rgba(255,255,255,.55); }
+    .tabs button:focus-visible, .primary-button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(40,127,122,.35); outline-offset: 2px; }
+    .tab-panel[hidden] { display: none; }
     .layout { display: grid; grid-template-columns: 246px minmax(0, 1fr); gap: 22px; align-items: start; }
     aside { padding: 19px 16px; border: 1px solid rgba(39,121,116,.12); border-radius: 16px; background: linear-gradient(180deg, rgba(235,246,244,.98), rgba(243,248,247,.96)); }
     aside h2 { margin: 0 0 15px; color: var(--teal); font-size: 18px; }
@@ -86,6 +88,19 @@
     .links a { color: #176b67; font-weight: 700; text-decoration: none; }
     .links a:hover { text-decoration: underline; text-underline-offset: 3px; }
     .disclaimer { margin-top: 20px; padding: 13px 15px; border: 1px solid rgba(39,121,116,.13); border-radius: 13px; color: #506a67; background: rgba(255,255,255,.68); font-size: 13px; }
+    .prediction-panel { max-width: 1020px; margin-left: auto; }
+    .prediction-panel h2 { margin: 0 0 8px; color: var(--teal); font-size: 23px; }
+    .prediction-panel > p { color: #58716f; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 13px; margin-top: 18px; }
+    .field { display: block; color: #456461; font-size: 13px; font-weight: 650; }
+    .field input, .field select { width: 100%; min-height: 42px; margin-top: 5px; padding: 8px 10px; border: 1px solid rgba(39,121,116,.17); border-radius: 9px; color: #304a47; background: rgba(255,255,255,.94); font: inherit; font-size: 14px; }
+    .primary-button { margin-top: 18px; min-height: 44px; padding: 10px 17px; border: 1px solid #176b67; border-radius: 11px; color: #fff; background: #176b67; font: inherit; font-weight: 750; cursor: pointer; }
+    .primary-button:hover { background: #125b58; }
+    .prediction-output { margin-top: 20px; padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.8); }
+    .prediction-output h3 { margin: 0 0 12px; color: var(--teal); font-size: 17px; }
+    .prediction-output[hidden] { display: none; }
+    .prediction-error { margin-top: 12px; color: #934c5e; font-weight: 650; }
+    .prediction-error:empty { display: none; }
     @media (max-width: 1000px) {
       .layout { grid-template-columns: 210px minmax(0,1fr); gap: 15px; }
       .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -99,7 +114,7 @@
       .charts { grid-template-columns: 1fr; }
       body::after { right: 8px; bottom: 12px; font-size: 118px; opacity: .15; }
     }
-    @media (max-width: 440px) { .metrics { gap: 8px; } .metric { padding: 13px; } .bar-row { grid-template-columns: 96px 1fr 38px; gap: 7px; } }
+    @media (max-width: 440px) { .metrics { gap: 8px; } .metric { padding: 13px; } .bar-row { grid-template-columns: 96px 1fr 38px; gap: 7px; } .form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -110,13 +125,13 @@
       <p class="warning"><strong>Data provenance:</strong> This dataset has no documented source or license, and its real-world provenance is unverified. Model outputs are exploratory associations only.</p>
     </header>
 
-    <nav class="tabs" aria-label="Dashboard sections">
-      <a class="active" href="#dashboard">Interactive dashboard</a>
-      <a href="#model-details">Model details</a>
-      <a href="#data-quality">Data quality</a>
+    <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+      <button class="active" id="tab-dashboard" type="button" role="tab" aria-selected="true" aria-controls="panel-dashboard">Interactive dashboard</button>
+      <button id="tab-prediction" type="button" role="tab" aria-selected="false" aria-controls="panel-prediction">Try a prediction</button>
+      <button id="tab-details" type="button" role="tab" aria-selected="false" aria-controls="panel-details">Model details</button>
     </nav>
 
-    <div class="layout" id="dashboard">
+    <section class="layout tab-panel" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
       <aside aria-label="Dashboard filter preview">
         <h2>Dashboard filters</h2>
         <div class="filter"><label>Cancer type</label><div class="fake-select">All types <span>⌄</span></div></div>
@@ -125,7 +140,7 @@
         <div class="filter"><label>Recorded outcome</label><div class="fake-select">All outcomes <span>⌄</span></div></div>
         <div class="filter"><label>Diagnosis year</label><div class="fake-slider"><span>All years</span><i></i></div></div>
         <div class="filter"><label>Age</label><div class="fake-slider"><span>All ages</span><i></i></div></div>
-        <p class="aside-note">This GitHub page is a static preview. Filters and prediction controls work only in the Streamlit application.</p>
+        <p class="aside-note">These filter controls are a visual preview only. Full dataset filtering is available in the Streamlit application; the prediction tab here runs in your browser.</p>
       </aside>
 
       <main>
@@ -154,30 +169,6 @@
           </section>
         </div>
 
-        <div class="below">
-          <section class="panel" id="model-details">
-            <h3>Model comparison</h3>
-            <table class="model-table">
-              <thead><tr><th>Model</th><th>Accuracy</th><th>Macro F1</th></tr></thead>
-              <tbody>
-                <tr><td>Baseline logistic regression</td><td>58.7%</td><td>0.367</td></tr>
-                <tr><td>Decision tree</td><td>55.1%</td><td>0.418</td></tr>
-                <tr><td class="selected">Tuned logistic regression</td><td>53.2%</td><td class="selected">0.452</td></tr>
-              </tbody>
-            </table>
-            <p class="metric-note">Tuning selected balanced class weights and C = 3.0 using 3-fold cross-validation.</p>
-          </section>
-          <section class="panel" id="data-quality">
-            <h3>Data quality notes</h3>
-            <ul class="quality-list">
-              <li>80,660 missing comorbidity values were set to Unknown.</li>
-              <li>Death dates and causes remain missing where absence is meaningful.</li>
-              <li>No duplicate rows, duplicate IDs, or invalid-range records were found.</li>
-              <li>Dataset source, license, measurement units, and outcome timing remain unverified.</li>
-            </ul>
-          </section>
-        </div>
-
         <div class="links">
           <a href="Project_Summary_Report.md">Full project report</a>
           <a href="Project_Summary_Report.docx">Word report</a>
@@ -185,7 +176,169 @@
         </div>
         <p class="disclaimer"><strong>Educational prototype only.</strong> Outcome is a recorded label at an unspecified observation time. This model is not a survival model, treatment-effect estimate, diagnosis tool, or clinical risk score.</p>
       </main>
-    </div>
+    </section>
+
+    <section class="panel prediction-panel tab-panel" id="panel-prediction" role="tabpanel" aria-labelledby="tab-prediction" hidden>
+      <h2>Try a prediction</h2>
+      <p>Enter diagnosis-time attributes to calculate model scores for the three recorded dataset classes.</p>
+      <p class="disclaimer">Scores are probabilities for dataset labels, not calibrated patient risks or clinical outcomes. This is an educational demo only.</p>
+      <form id="prediction-form">
+        <div class="form-grid">
+          <label class="field">Age (years)<input id="input-Age" name="Age" type="number" min="18" max="100" step="1" value="50" required></label>
+          <label class="field">BMI<input id="input-BMI" name="BMI" type="number" min="10" max="55" step="0.5" value="24" required></label>
+        </div>
+        <div class="form-grid" id="category-fields"></div>
+        <button class="primary-button" id="calculate-button" type="submit">Calculate class scores</button>
+      </form>
+      <p class="prediction-error" id="prediction-error" role="alert"></p>
+      <div class="prediction-output" id="prediction-output" aria-live="polite" hidden>
+        <h3 id="prediction-winner"></h3>
+        <div id="prediction-bars"></div>
+        <p class="metric-note">Scores refer only to recorded dataset labels, not patient risk.</p>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-details" role="tabpanel" aria-labelledby="tab-details" hidden>
+      <div class="charts">
+        <section class="panel" id="model-details">
+          <h2>Model comparison</h2>
+          <table class="model-table">
+            <thead><tr><th>Model</th><th>Accuracy</th><th>Macro F1</th></tr></thead>
+            <tbody>
+              <tr><td>Baseline logistic regression</td><td>58.7%</td><td>0.367</td></tr>
+              <tr><td>Decision tree</td><td>55.1%</td><td>0.418</td></tr>
+              <tr><td class="selected">Tuned logistic regression</td><td>53.2%</td><td class="selected">0.452</td></tr>
+            </tbody>
+          </table>
+          <p class="metric-note">Tuning selected balanced class weights and C = 3.0 using 3-fold cross-validation.</p>
+        </section>
+        <section class="panel" id="data-quality">
+          <h2>Data quality notes</h2>
+          <ul class="quality-list">
+            <li>80,660 missing comorbidity values were set to Unknown.</li>
+            <li>Death dates and causes remain missing where absence is meaningful.</li>
+            <li>No duplicate rows, duplicate IDs, or invalid-range records were found.</li>
+            <li>Dataset source, license, measurement units, and outcome timing remain unverified.</li>
+          </ul>
+        </section>
+      </div>
+      <div class="links">
+        <a href="Project_Summary_Report.md">Full project report</a>
+        <a href="Project_Summary_Report.docx">Word report</a>
+        <a href="README.md">Project README</a>
+      </div>
+      <p class="disclaimer"><strong>Educational prototype only.</strong> Outcome is a recorded label at an unspecified observation time. This model is not a survival model, treatment-effect estimate, diagnosis tool, or clinical risk score.</p>
+    </section>
   </div>
+  <script type="application/json" id="model-parameters">{"classes":["Deceased","Recovered","Under Treatment"],"coefficients":[[0.09340414272157982,0.008375816658544952,0.004343468540184015,-0.0038938254936620787,0.004149282210046486,-0.00369963916353807,0.010606091785241705,-0.013805308809179963,0.023289563170100044,-0.00267766793396267,0.005562288617513538,-0.010074919109379556,-0.012450404673824307,-0.0024619255379223826,0.004422074591504712,0.004271687364917467,0.012755179414099064,0.024460638069199396,-0.014346734024579566,-0.026614006071826107,-0.002037270758870431,-0.6314852975707699,-0.35600469090620546,0.16669057939367105,0.8212490521300407,-0.05260758026236419,0.05305722330883243,0.056283464957320034,0.02056656385447509,0.029158977475469007,-0.10555936324084693,-0.014405270654129094,0.004560507732557711,-0.017228535819753883,0.012837808931753297,0.014685132856066782],[-0.06688698301261103,-0.003927423439241456,-0.00768480297811995,-0.01124850408932777,-0.015032777972064065,-0.0039005290954282888,-0.014980398131802162,-0.0020998736521086908,-0.007307720817779819,0.0037005282206920404,-0.014050327958783655,0.006330479565163765,0.00947400570712739,-0.006494889662584164,0.0038433343274339787,0.0023493151017255267,-0.017491949920445164,-0.01711430641851714,0.005759818107366802,0.005463408615616494,0.004751962781914896,0.8216506426030473,0.3837947160276353,-0.23231424673428072,-0.9920644189643014,0.0037235468578119026,-0.022656853925301926,-0.049439063828957616,0.001650187692970901,-0.014288275455257172,0.043143844523752826,0.005345406625781529,0.004924749042117583,0.010293647645713052,-0.01946508295521704,-0.02003202742588551],[-0.02651715970894404,-0.004448393219303115,0.0033413344379381892,0.015142329583031067,0.01088349576200983,0.007600168258964328,0.004374306346559846,0.01590518246128137,-0.015981842352326532,-0.0010228602867283394,0.008488039341270645,0.0037444395442138554,0.0029763989666980605,0.008956815200508424,-0.008265408918936526,-0.006621002466641628,0.004736770506347933,-0.007346331650672996,0.008586915917205897,0.021150597456209567,-0.0027146920230423184,-0.19016534503263371,-0.02779002512094317,0.0656236673406393,0.17081536683379864,0.04888403340445196,-0.030400369383560073,-0.0068444011283605045,-0.0222167515474845,-0.014870702020254476,0.06241551871700846,0.009059864028348411,-0.009485256774709063,0.0069348881740416085,0.006627274023465065,0.005346894569819142]],"intercept":[0.00044966701697459805,-0.018935451330110535,0.018485784313115615],"numeric":[{"name":"Age","mean":53.63923125,"scale":21.026863821288792,"imputer":53.0},{"name":"BMI","mean":24.582223491736553,"scale":6.291602389775987,"imputer":24.167162403331353}],"categorical":[{"name":"Gender","default":"Female","choices":["Female","Male"]},{"name":"Nationality","default":"Emirati","choices":["Emirati","Expatriate"]},{"name":"Emirate","default":"Ajman","choices":["Abu Dhabi","Ajman","Dubai","Fujairah","Ras Al Khaimah","Sharjah","Umm Al Quwain"]},{"name":"Cancer_Type","default":"Leukemia","choices":["Breast","Colorectal","Leukemia","Liver","Lung","Ovarian","Pancreatic","Prostate"]},{"name":"Cancer_Stage","default":"II","choices":["I","II","III","IV"]},{"name":"Smoking_Status","default":"Non-Smoker","choices":["Non-Smoker","Smoker"]},{"name":"Comorbidities","default":"Unknown","choices":["Cardiovascular Disease","Diabetes","Hypertension","Unknown"]},{"name":"Ethnicity","default":"Arab","choices":["African","Arab","East Asian","European","South Asian"]}]}</script>
+  <script>
+    (() => {
+      const params = JSON.parse(document.getElementById('model-parameters').textContent);
+      const categoryFields = document.getElementById('category-fields');
+      const labels = {
+        Gender: 'Gender', Nationality: 'Nationality', Emirate: 'Emirate',
+        Cancer_Type: 'Cancer type', Cancer_Stage: 'Cancer stage',
+        Smoking_Status: 'Smoking status', Comorbidities: 'Recorded comorbidity',
+        Ethnicity: 'Ethnicity'
+      };
+      const defaults = {
+        Gender: 'Female', Nationality: 'Emirati', Emirate: 'Abu Dhabi',
+        Cancer_Type: 'Breast', Cancer_Stage: 'I', Smoking_Status: 'Non-Smoker',
+        Comorbidities: 'Unknown', Ethnicity: 'Arab'
+      };
+
+      for (const feature of params.categorical) {
+        const label = document.createElement('label');
+        label.className = 'field';
+        label.append(document.createTextNode(labels[feature.name] || feature.name));
+        const select = document.createElement('select');
+        select.id = `input-${feature.name}`;
+        select.name = feature.name;
+        for (const value of feature.choices) {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = value;
+          select.append(option);
+        }
+        const defaultValue = defaults[feature.name] || feature.default;
+        if (feature.choices.includes(defaultValue)) select.value = defaultValue;
+        label.append(select);
+        categoryFields.append(label);
+      }
+
+      const tabs = [...document.querySelectorAll('[role="tab"]')];
+      const panels = [...document.querySelectorAll('.tab-panel')];
+      for (const tab of tabs) {
+        tab.addEventListener('click', () => {
+          const targetId = tab.getAttribute('aria-controls');
+          for (const item of tabs) {
+            const active = item === tab;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-selected', String(active));
+          }
+          for (const panel of panels) panel.hidden = panel.id !== targetId;
+        });
+      }
+
+      const form = document.getElementById('prediction-form');
+      const error = document.getElementById('prediction-error');
+      const result = document.getElementById('prediction-output');
+      const bars = document.getElementById('prediction-bars');
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        error.textContent = '';
+        result.hidden = true;
+        const values = {};
+        for (const feature of params.numeric) {
+          const raw = Number(document.getElementById(`input-${feature.name}`).value);
+          if (!Number.isFinite(raw)) {
+            error.textContent = `Enter a valid value for ${feature.name}.`;
+            return;
+          }
+          values[feature.name] = raw;
+        }
+        for (const feature of params.categorical) {
+          values[feature.name] = document.getElementById(`input-${feature.name}`).value;
+        }
+
+        const vector = [];
+        for (const feature of params.numeric) {
+          vector.push((values[feature.name] - feature.mean) / (feature.scale || 1));
+        }
+        for (const feature of params.categorical) {
+          for (const category of feature.choices) vector.push(values[feature.name] === category ? 1 : 0);
+        }
+        const logits = params.coefficients.map((weights, index) =>
+          params.intercept[index] + weights.reduce((sum, weight, i) => sum + weight * vector[i], 0)
+        );
+        const maxLogit = Math.max(...logits);
+        const exponentials = logits.map(value => Math.exp(value - maxLogit));
+        const total = exponentials.reduce((sum, value) => sum + value, 0);
+        const scores = params.classes.map((name, index) => ({name, score: exponentials[index] / total}))
+          .sort((a, b) => b.score - a.score);
+
+        document.getElementById('prediction-winner').textContent = `Most likely recorded class: ${scores[0].name} (${(scores[0].score * 100).toFixed(1)}%)`;
+        bars.replaceChildren();
+        for (const item of scores) {
+          const row = document.createElement('div');
+          row.className = 'bar-row';
+          const name = document.createElement('span');
+          name.textContent = item.name;
+          const track = document.createElement('div');
+          track.className = 'bar-track';
+          const fill = document.createElement('div');
+          fill.className = 'bar-fill';
+          fill.style.width = `${(item.score * 100).toFixed(2)}%`;
+          track.append(fill);
+          const score = document.createElement('span');
+          score.className = 'bar-value';
+          score.textContent = `${(item.score * 100).toFixed(1)}%`;
+          row.append(name, track, score);
+          bars.append(row);
+        }
+        result.hidden = false;
+      });
+    })();
+  </script>
 </body>
 </html>
