@@ -33,8 +33,9 @@ src/pipeline.py                Cleaning, preprocessing, model comparison/tuning
 notebooks/01_end_to_end.ipynb  Project narrative, EDA, training and results
 docs/                          Dataset provenance and data dictionary
 data/raw/README.md             Where to place the workbook
-models/                        Generated model artifact (not committed)
-reports/                       Generated evaluation report (not committed)
+data/processed/                Cleaned CSV consumed by both dashboards
+models/                        Fitted model artifact used by Streamlit
+reports/                       Model evaluation metrics
 ```
 
 ## Run locally
@@ -53,28 +54,27 @@ python -m streamlit run app.py
 The pipeline makes a stratified 80/20 split, compares logistic regression and a
 decision tree, tunes logistic regression with 3-fold randomized search, and
 writes a cleaned table to `data/processed/cleaned_dataset.csv`, a model artifact,
-and metrics to `reports/model_metrics.json`. Generated data and model files are
-git-ignored. Preprocessing is fitted inside the model pipeline to avoid leakage.
+and metrics to `reports/model_metrics.json`. These runtime artifacts are
+committed for deployment. Preprocessing is fitted inside the model pipeline to avoid leakage.
 Missing comorbidity becomes `Unknown`;
 patient ID, treatment/follow-up details, dates, hospital, physician, weight and
 height are excluded from predictors. BMI is derived from weight/height.
 
 ## Deployment
 
-The app runs locally once `python train.py` has generated its artifacts. A
-public Streamlit Community Cloud deployment is **not ready**: data license and
-provenance are unverified, and the workbook/model artifact is not included.
-Confirm data-sharing rights, use a suitable licensed source, and decide on a
-reproducible artifact/download approach before publishing. Never upload
-identifiable or restricted health data.
+Streamlit Community Cloud can use `app.py`, `requirements.txt`, and the
+committed files under `data/processed/`, `models/`, and `reports/`. Before
+using a public deployment, confirm data-sharing rights: the dataset source and
+license are unverified, and the CSV contains patient-level fields. Never
+publish identifiable or restricted health data without authorization.
 
-The repository also contains a static project overview in `index.html` for
-GitHub Pages. GitHub Pages can serve that overview, but it cannot execute
-`app.py` or host the interactive Streamlit dashboard. To publish the static
-page, configure **Settings → Pages → Deploy from a branch → `main` → `/(root)`**.
-The overview includes a browser-side prediction form based on the fitted model;
-its full-dataset filters still require the Streamlit app and local data/model
-artifacts. The web form’s scores remain exploratory dataset-label probabilities,
+The repository also contains `index.html` and `dashboard-worker.js` for GitHub
+Pages. The static page loads `data/processed/cleaned_dataset.csv` in the browser,
+so its filters and charts update without a Python server. GitHub Pages still
+cannot execute `app.py`; use Streamlit Community Cloud for the Streamlit
+version. To publish the static page, configure **Settings → Pages → Deploy
+from a branch → `main` → `/(root)`**. The browser-side prediction form uses the
+fitted model parameters. Its scores are exploratory dataset-label probabilities,
 not clinical risks.
 
 ## Results

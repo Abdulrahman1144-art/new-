@@ -57,8 +57,19 @@
     aside h2 { margin: 0 0 15px; color: var(--teal); font-size: 18px; }
     .filter { margin: 0 0 15px; }
     .filter label { display: block; margin-bottom: 5px; color: #456461; font-size: 13px; font-weight: 650; }
-    .fake-select, .fake-slider { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid rgba(39,121,116,.15); border-radius: 9px; color: #667d7a; background: rgba(255,255,255,.78); font-size: 12px; }
-    .fake-slider i { display: block; align-self: center; width: 58%; height: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--teal-mid) 0 78%, #d3e2df 78%); }
+    .filter details { border: 1px solid rgba(39,121,116,.15); border-radius: 9px; background: rgba(255,255,255,.78); }
+    .filter summary { padding: 8px 10px; color: #456461; font-size: 12px; cursor: pointer; }
+    .filter-options { max-height: 190px; overflow: auto; padding: 0 10px 9px; border-top: 1px solid rgba(39,121,116,.1); }
+    .filter-option { display: flex; align-items: center; gap: 7px; padding: 4px 0; color: #526d6a; font-size: 12px; font-weight: 400; cursor: pointer; }
+    .filter-option input { accent-color: var(--teal-mid); }
+    .filter-actions { display: flex; gap: 10px; padding: 6px 0 2px; }
+    .filter-actions button { padding: 0; border: 0; color: #176b67; background: none; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .range-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 5px 9px 9px; }
+    .range-pair label { margin: 0; color: #718582; font-size: 11px; font-weight: 600; }
+    .range-pair input { width: 100%; margin: 3px 0 0; accent-color: var(--teal-mid); }
+    .range-values { display: flex; justify-content: space-between; padding: 0 9px; color: #456461; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .dataset-status { margin: 14px 0 0; color: #55736f; font-size: 12px; }
+    .dataset-status.error { color: #934c5e; }
     .aside-note { margin: 18px 0 0; padding-top: 13px; border-top: 1px solid rgba(39,121,116,.12); color: #68807d; font-size: 12px; }
     main h2 { margin: 0 0 15px; color: var(--teal); font-size: 21px; letter-spacing: -.02em; }
     .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 19px; }
@@ -74,7 +85,22 @@
     .bar-fill { height: 100%; border-radius: inherit; background: #3d9990; }
     .bar-fill.rose { background: #cf8798; }
     .bar-fill.deep { background: #598a83; }
+    .bar-fill.gold { background: #c99c55; }
+    .bar-fill.plum { background: #9273a6; }
     .bar-value { text-align: right; color: #45615e; font-variant-numeric: tabular-nums; }
+    .empty-chart { color: #718582; font-size: 13px; }
+    .breakdown-label { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; color: #66807c; font-size: 11px; font-weight: 600; }
+    .breakdown-label select { max-width: 145px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 7px; color: #456461; background: #fff; font: inherit; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 8px; color: #58716f; font-size: 11px; }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; background: #3d9990; }
+    .legend-dot.rose { background: #cf8798; }
+    .legend-dot.deep { background: #598a83; }
+    .legend-dot.gold { background: #c99c55; }
+    .legend-dot.plum { background: #9273a6; }
+    .stack-row { display: grid; grid-template-columns: minmax(82px, 1fr) 2fr 48px; gap: 9px; align-items: center; margin: 11px 0; color: #58716f; font-size: 12px; }
+    .stack-track { display: flex; height: 12px; overflow: hidden; border-radius: 999px; background: #e8f0ee; }
+    .stack-segment { height: 100%; }
     .below { display: grid; grid-template-columns: 1.15fr .85fr; gap: 15px; margin-top: 15px; }
     .model-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .model-table th, .model-table td { padding: 9px 7px; border-bottom: 1px solid #e5eeec; text-align: left; }
@@ -111,6 +137,7 @@
       .layout { grid-template-columns: 1fr; }
       aside { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0 12px; }
       aside h2, .aside-note { grid-column: 1 / -1; }
+      #category-filters, .dataset-status { grid-column: 1 / -1; }
       .charts { grid-template-columns: 1fr; }
       body::after { right: 8px; bottom: 12px; font-size: 118px; opacity: .15; }
     }
@@ -132,41 +159,37 @@
     </nav>
 
     <section class="layout tab-panel" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
-      <aside aria-label="Dashboard filter preview">
+      <aside aria-label="Interactive dashboard filters">
         <h2>Dashboard filters</h2>
-        <div class="filter"><label>Cancer type</label><div class="fake-select">All types <span>⌄</span></div></div>
-        <div class="filter"><label>Emirate</label><div class="fake-select">All emirates <span>⌄</span></div></div>
-        <div class="filter"><label>Gender</label><div class="fake-select">All genders <span>⌄</span></div></div>
-        <div class="filter"><label>Recorded outcome</label><div class="fake-select">All outcomes <span>⌄</span></div></div>
-        <div class="filter"><label>Diagnosis year</label><div class="fake-slider"><span>All years</span><i></i></div></div>
-        <div class="filter"><label>Age</label><div class="fake-slider"><span>All ages</span><i></i></div></div>
-        <p class="aside-note">These filter controls are a visual preview only. Full dataset filtering is available in the Streamlit application; the prediction tab here runs in your browser.</p>
+        <div id="category-filters"></div>
+        <div class="filter">
+          <label for="year-min">Diagnosis year</label>
+          <div class="range-values"><span id="year-min-value">Loading</span><span id="year-max-value">Loading</span></div>
+          <div class="range-pair"><label>From<input id="year-min" type="range" disabled></label><label>To<input id="year-max" type="range" disabled></label></div>
+        </div>
+        <div class="filter">
+          <label for="age-min">Age</label>
+          <div class="range-values"><span id="age-min-value">Loading</span><span id="age-max-value">Loading</span></div>
+          <div class="range-pair"><label>Min<input id="age-min" type="range" disabled></label><label>Max<input id="age-max" type="range" disabled></label></div>
+        </div>
+        <p class="aside-note">Choose values above to update the dashboard cards and charts. The dataset is loaded from this GitHub Pages site.</p>
+        <p class="dataset-status" id="dataset-status" role="status" aria-live="polite">Loading dashboard data…</p>
       </aside>
 
       <main>
-        <h2>Project overview</h2>
+        <h2>Filtered dataset overview</h2>
         <div class="metrics">
-          <article class="metric"><div class="metric-label">Dataset records</div><div class="metric-value">200,000</div><div class="metric-note">supplied workbook</div></article>
-          <article class="metric"><div class="metric-label">Held-out accuracy</div><div class="metric-value">53.2%</div><div class="metric-note">40,000 test records</div></article>
-          <article class="metric"><div class="metric-label">Held-out macro F1</div><div class="metric-value">0.452</div><div class="metric-note">average across classes</div></article>
-          <article class="metric"><div class="metric-label">Selected model</div><div class="metric-value">Logistic</div><div class="metric-note">balanced, tuned</div></article>
+          <article class="metric"><div class="metric-label">Matching records</div><div class="metric-value" id="metric-records">—</div><div class="metric-note" id="metric-share">Loading dataset</div></article>
+          <article class="metric"><div class="metric-label">Median age</div><div class="metric-value" id="metric-age">—</div><div class="metric-note">within current filters</div></article>
+          <article class="metric"><div class="metric-label">Cancer types</div><div class="metric-value" id="metric-cancers">—</div><div class="metric-note">represented in filtered data</div></article>
+          <article class="metric"><div class="metric-label">Emirates</div><div class="metric-value" id="metric-emirates">—</div><div class="metric-note">represented in filtered data</div></article>
         </div>
 
         <div class="charts">
-          <section class="panel">
-            <h3>Held-out records by recorded outcome</h3>
-            <div class="bar-row"><span>Recovered</span><div class="bar-track"><div class="bar-fill" style="width:55.2%"></div></div><span class="bar-value">22,089</span></div>
-            <div class="bar-row"><span>Under Treatment</span><div class="bar-track"><div class="bar-fill rose" style="width:30.4%"></div></div><span class="bar-value">12,171</span></div>
-            <div class="bar-row"><span>Deceased</span><div class="bar-track"><div class="bar-fill deep" style="width:14.4%"></div></div><span class="bar-value">5,740</span></div>
-            <p class="metric-note">Counts are for the stratified test split, not live patient records.</p>
-          </section>
-          <section class="panel">
-            <h3>Per-class model F1</h3>
-            <div class="bar-row"><span>Recovered</span><div class="bar-track"><div class="bar-fill" style="width:70.3%"></div></div><span class="bar-value">0.703</span></div>
-            <div class="bar-row"><span>Deceased</span><div class="bar-track"><div class="bar-fill deep" style="width:37.4%"></div></div><span class="bar-value">0.374</span></div>
-            <div class="bar-row"><span>Under Treatment</span><div class="bar-track"><div class="bar-fill rose" style="width:28%"></div></div><span class="bar-value">0.280</span></div>
-            <p class="metric-note">Under Treatment recall is 0.217; performance is uneven across classes.</p>
-          </section>
+          <section class="panel"><h3>Records by recorded outcome</h3><div id="chart-outcomes"></div></section>
+          <section class="panel"><h3>Recorded outcome by cancer stage</h3><div id="chart-stages"></div></section>
+          <section class="panel"><h3>Diagnosis volume by year</h3><div id="chart-years"></div></section>
+          <section class="panel"><h3>Breakdown <label class="breakdown-label" for="breakdown-select">Group by</label><select id="breakdown-select"><option value="Cancer_Type">Cancer type</option><option value="Cancer_Stage">Cancer stage</option><option value="Emirate">Emirate</option><option value="Smoking_Status">Smoking status</option><option value="Nationality">Nationality</option></select></h3><div id="chart-breakdown"></div></section>
         </div>
 
         <div class="links">
@@ -222,11 +245,11 @@
           </ul>
         </section>
       </div>
-      <div class="links">
+        <div class="links">
         <a href="Project_Summary_Report.md">Full project report</a>
         <a href="Project_Summary_Report.docx">Word report</a>
         <a href="README.md">Project README</a>
-      </div>
+        </div>
       <p class="disclaimer"><strong>Educational prototype only.</strong> Outcome is a recorded label at an unspecified observation time. This model is not a survival model, treatment-effect estimate, diagnosis tool, or clinical risk score.</p>
     </section>
   </div>
@@ -338,6 +361,245 @@
         }
         result.hidden = false;
       });
+    })();
+  </script>
+  <script>
+    (() => {
+      const status = document.getElementById("dataset-status");
+      const categoryFilters = document.getElementById("category-filters");
+      const yearMin = document.getElementById("year-min");
+      const yearMax = document.getElementById("year-max");
+      const ageMin = document.getElementById("age-min");
+      const ageMax = document.getElementById("age-max");
+      const filterGroups = [
+        ["Cancer_Type", "Cancer type"],
+        ["Emirate", "Emirate"],
+        ["Gender", "Gender"],
+        ["Outcome", "Recorded outcome"]
+      ];
+      const colors = ["", "rose", "deep", "gold", "plum"];
+      const outcomeColor = { Recovered: "", Deceased: "deep", "Under Treatment": "rose" };
+      let allOptions = {};
+      let totalRecords = 0;
+      let filterTimer;
+
+      const worker = new Worker(new URL("dashboard-worker.js", document.baseURI));
+      const formatNumber = value => Number(value).toLocaleString();
+
+      function addEmpty(container, text) {
+        const message = document.createElement("p");
+        message.className = "empty-chart";
+        message.textContent = text;
+        container.replaceChildren(message);
+      }
+
+      function checkedValues(field) {
+        return [...categoryFilters.querySelectorAll(`input[data-filter="${field}"]:checked`)].map(item => item.value);
+      }
+
+      function updateSummary(details, field) {
+        const selected = checkedValues(field).length;
+        const count = (allOptions[field] || []).length;
+        details.querySelector("summary").textContent = selected === count
+          ? `All ${count} selected`
+          : `${selected} of ${count} selected`;
+      }
+
+      function renderFilterGroup(field, labelText, values) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "filter";
+        const label = document.createElement("label");
+        label.textContent = labelText;
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        details.append(summary);
+        const options = document.createElement("div");
+        options.className = "filter-options";
+        for (const value of values) {
+          const optionLabel = document.createElement("label");
+          optionLabel.className = "filter-option";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = true;
+          checkbox.value = value;
+          checkbox.dataset.filter = field;
+          checkbox.addEventListener("change", () => {
+            updateSummary(details, field);
+            requestUpdate();
+          });
+          const text = document.createElement("span");
+          text.textContent = value;
+          optionLabel.append(checkbox, text);
+          options.append(optionLabel);
+        }
+        const actions = document.createElement("div");
+        actions.className = "filter-actions";
+        for (const [text, checked] of [["Select all", true], ["Clear", false]]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = text;
+          button.addEventListener("click", () => {
+            options.querySelectorAll("input").forEach(input => { input.checked = checked; });
+            updateSummary(details, field);
+            requestUpdate();
+          });
+          actions.append(button);
+        }
+        options.append(actions);
+        details.append(options);
+        wrapper.append(label, details);
+        categoryFilters.append(wrapper);
+        updateSummary(details, field);
+      }
+
+      function readFilters() {
+        return {
+          Cancer_Type: checkedValues("Cancer_Type"),
+          Emirate: checkedValues("Emirate"),
+          Gender: checkedValues("Gender"),
+          Outcome: checkedValues("Outcome"),
+          year: [Number(yearMin.value), Number(yearMax.value)],
+          age: [Number(ageMin.value), Number(ageMax.value)],
+          breakdown: document.getElementById("breakdown-select").value
+        };
+      }
+
+      function requestUpdate() {
+        if (!totalRecords) return;
+        clearTimeout(filterTimer);
+        filterTimer = setTimeout(() => worker.postMessage({ type: "filter", filters: readFilters() }), 80);
+      }
+
+      function setRange(minInput, maxInput, low, high, lowOutput, highOutput) {
+        for (const input of [minInput, maxInput]) {
+          input.min = String(low);
+          input.max = String(high);
+          input.disabled = false;
+        }
+        minInput.value = String(low);
+        maxInput.value = String(high);
+        lowOutput.textContent = String(low);
+        highOutput.textContent = String(high);
+        const sync = changed => {
+          if (Number(minInput.value) > Number(maxInput.value)) {
+            if (changed === minInput) maxInput.value = minInput.value;
+            else minInput.value = maxInput.value;
+          }
+          lowOutput.textContent = minInput.value;
+          highOutput.textContent = maxInput.value;
+          requestUpdate();
+        };
+        minInput.addEventListener("input", () => sync(minInput));
+        maxInput.addEventListener("input", () => sync(maxInput));
+      }
+
+      function renderBars(container, entries) {
+        const rows = entries.filter(([, value]) => value > 0);
+        if (!rows.length) return addEmpty(container, "No records match these filters.");
+        const max = Math.max(...rows.map(([, value]) => value));
+        const fragment = document.createDocumentFragment();
+        rows.forEach(([label, value], index) => {
+          const row = document.createElement("div");
+          row.className = "bar-row";
+          const name = document.createElement("span");
+          name.textContent = label;
+          const track = document.createElement("div");
+          track.className = "bar-track";
+          const fill = document.createElement("div");
+          fill.className = `bar-fill ${colors[index % colors.length]}`.trim();
+          fill.style.width = `${(value / max * 100).toFixed(2)}%`;
+          track.append(fill);
+          const count = document.createElement("span");
+          count.className = "bar-value";
+          count.textContent = formatNumber(value);
+          row.append(name, track, count);
+          fragment.append(row);
+        });
+        container.replaceChildren(fragment);
+      }
+
+      function renderStacked(container, data, outcomes) {
+        const entries = Object.entries(data).sort((a, b) => a[0].localeCompare(b[0]));
+        if (!entries.length) return addEmpty(container, "No records match these filters.");
+        const max = Math.max(...entries.map(([, counts]) => Object.values(counts).reduce((sum, value) => sum + value, 0)));
+        const fragment = document.createDocumentFragment();
+        const legend = document.createElement("div");
+        legend.className = "chart-legend";
+        outcomes.forEach((outcome, index) => {
+          const item = document.createElement("span");
+          item.className = "legend-item";
+          const dot = document.createElement("i");
+          dot.className = `legend-dot ${outcomeColor[outcome] || colors[index % colors.length]}`.trim();
+          const name = document.createElement("span");
+          name.textContent = outcome;
+          item.append(dot, name);
+          legend.append(item);
+        });
+        fragment.append(legend);
+        for (const [label, counts] of entries) {
+          const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+          const row = document.createElement("div");
+          row.className = "stack-row";
+          const name = document.createElement("span");
+          name.textContent = label || "Unknown";
+          const track = document.createElement("div");
+          track.className = "stack-track";
+          for (const [index, outcome] of outcomes.entries()) {
+            const count = counts[outcome] || 0;
+            if (!count) continue;
+            const segment = document.createElement("span");
+            segment.className = `stack-segment bar-fill ${outcomeColor[outcome] || colors[index % colors.length]}`.trim();
+            segment.style.width = `${count / max * 100}%`;
+            segment.title = `${outcome}: ${formatNumber(count)}`;
+            track.append(segment);
+          }
+          const count = document.createElement("span");
+          count.className = "bar-value";
+          count.textContent = formatNumber(total);
+          row.append(name, track, count);
+          fragment.append(row);
+        }
+        container.replaceChildren(fragment);
+      }
+
+      function renderSummary(summary) {
+        document.getElementById("metric-records").textContent = formatNumber(summary.total);
+        document.getElementById("metric-share").textContent = `${(summary.total / summary.allTotal * 100).toFixed(1)}% of all records`;
+        document.getElementById("metric-age").textContent = summary.median === null ? "—" : String(Math.round(summary.median));
+        document.getElementById("metric-cancers").textContent = String(summary.cancerCount);
+        document.getElementById("metric-emirates").textContent = String(summary.emirateCount);
+        renderBars(document.getElementById("chart-outcomes"), Object.entries(summary.outcomeCounts).sort((a, b) => b[1] - a[1]));
+        renderStacked(document.getElementById("chart-stages"), summary.stages, summary.outcomes);
+        renderBars(document.getElementById("chart-years"), Object.entries(summary.years).sort((a, b) => Number(a[0]) - Number(b[0])));
+        renderStacked(document.getElementById("chart-breakdown"), summary.breakdown, summary.outcomes);
+        status.textContent = `Showing ${formatNumber(summary.total)} of ${formatNumber(summary.allTotal)} records.`;
+      }
+
+      worker.onmessage = event => {
+        const message = event.data;
+        if (message.type === "error") {
+          status.classList.add("error");
+          status.textContent = `${message.message} Open this page through GitHub Pages or a local web server.`;
+          return;
+        }
+        if (message.type === "ready") {
+          totalRecords = message.total;
+          allOptions = message.options;
+          categoryFilters.replaceChildren();
+          filterGroups.forEach(([field, label]) => renderFilterGroup(field, label, message.options[field] || []));
+          setRange(yearMin, yearMax, ...message.ranges.year, document.getElementById("year-min-value"), document.getElementById("year-max-value"));
+          setRange(ageMin, ageMax, ...message.ranges.age, document.getElementById("age-min-value"), document.getElementById("age-max-value"));
+          document.getElementById("breakdown-select").addEventListener("change", requestUpdate);
+          status.textContent = `Loaded ${formatNumber(totalRecords)} records. Choose filters to update the charts.`;
+          requestUpdate();
+        } else if (message.type === "summary") {
+          renderSummary(message);
+        }
+      };
+      worker.onerror = () => {
+        status.classList.add("error");
+        status.textContent = "The dashboard could not start. Reload the page and check that dashboard-worker.js is deployed.";
+      };
     })();
   </script>
 </body>
